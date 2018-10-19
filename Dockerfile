@@ -53,6 +53,7 @@ RUN mkdir -p /ext  && echo " " > /ext/.vimrc
 
 # Vim plugins deps
 RUN apk --update add \
+    openssh-client \
     bash \
     ctags \
     curl \
