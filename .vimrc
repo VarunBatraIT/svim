@@ -2,12 +2,13 @@ set background=dark
 colorscheme solarized
 set relativenumber
 set number
-" set term=xterm=256color
+set t_Co=256
+set term=xterm-256color
 " Indent Settings
 let g:indent_guides_auto_colors = 0
 let g:indent_guides_enable_on_vim_startup = 1
-autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=lightblue
-autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=lightcyan
+autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=56
+autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=57
 "autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=black   ctermbg=3
 "autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=grey ctermbg=4
 set updatetime=100
