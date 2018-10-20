@@ -138,6 +138,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-addon-mw-utils && git clone --depth 1 https://github.com/marcweber/vim-addon-mw-utils \
     && rm -rf vim-airline && git clone --depth 1 https://github.com/bling/vim-airline \
     && rm -rf vim-bookmarks && git clone --depth 1 https://github.com/MattesGroeger/vim-bookmarks.git \
+    && rm -rf vim-better-whitespace && git clone --depth 1 https://github.com/ntpeters/vim-better-whitespace.git \
     && rm -rf vim-easymotion && git clone --depth 1 https://github.com/easymotion/vim-easymotion \
     && rm -rf vim-expand-region && git clone --depth 1 https://github.com/terryma/vim-expand-region \
     && rm -rf vim-fugitive && git clone --depth 1 https://github.com/tpope/vim-fugitive \
