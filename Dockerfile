@@ -103,9 +103,9 @@ COPY .vimrc $UHOME/my.vimrc
 
 # Build default .vimrc
 RUN  mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
-		 && git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x
+	 && git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x
 RUN  cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
-		 && sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
+	 && sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
      && cat  $UHOME/my.vimrc \
      >> $UHOME/.vimrc~ \
      # && rm $UHOME/my.vimrc \
