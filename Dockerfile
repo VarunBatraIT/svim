@@ -73,7 +73,7 @@ RUN apk --update add \
     && cd $UHOME/bundle/YouCompleteMe \
     && git submodule update --init --recursive \
     && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer \
-# Install and compile procvim.vim                        
+# Install and compile procvim.vim
     && git clone --depth 1 https://github.com/Shougo/vimproc.vim \
     $UHOME/bundle/vimproc.vim \
     && cd $UHOME/bundle/vimproc.vim \
@@ -158,7 +158,8 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-snippets && git clone --depth 1 https://github.com/honza/vim-snippets \
     && rm -rf vim-surround && git clone --depth 1 https://github.com/tpope/vim-surround \
     && rm -rf vim-tmux-navigator && git clone --depth 1 https://github.com/christoomey/vim-tmux-navigator \
-    && rm -rf YankRing,vim && git clone --depth 1 https://github.com/vim-scripts/YankRing.vim \
+    && rm -rf YankRing.vim && git clone --depth 1 https://github.com/vim-scripts/YankRing.vim \
+    && rm -rf vim-abolish && git clone --depth 1 https://github.com/tpope/vim-abolish \
 # Theme
     && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized
 
