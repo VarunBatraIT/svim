@@ -123,6 +123,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf delimitMate && git clone --depth 1 https://github.com/Raimondi/delimitMate \
     && rm -rf Dockerfile.vim && git clone --depth 1 https://github.com/ekalinin/Dockerfile.vim \
     && rm -rf EasyGrep && git clone --depth 1 https://github.com/vim-scripts/EasyGrep \
+    && rm -rf FlyGrep.vim && git clone --depth 1 https://github.com/wsdjeg/FlyGrep.vim.git \
     && rm -rf html5.vim && git clone --depth 1 https://github.com/othree/html5.vim \
     && rm -rf mru.vim && git clone --depth 1 https://github.com/vim-scripts/mru.vim \
     && rm -rf nedtree-git-plugin && git clone --depth 1 https://github.com/xuyuanp/nerdtree-git-plugin.git \
@@ -135,10 +136,11 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf tlib-vim && git clone --depth 1 https://github.com/tomtom/tlib_vim \
     && rm -rf ultisnips && git clone --depth 1 https://github.com/SirVer/ultisnips \
     && rm -rf undotree && git clone --depth 1 https://github.com/mbbill/undotree \
+    && rm -rf vim-abolish && git clone --depth 1 https://github.com/tpope/vim-abolish \
     && rm -rf vim-addon-mw-utils && git clone --depth 1 https://github.com/marcweber/vim-addon-mw-utils \
     && rm -rf vim-airline && git clone --depth 1 https://github.com/bling/vim-airline \
-    && rm -rf vim-bookmarks && git clone --depth 1 https://github.com/MattesGroeger/vim-bookmarks.git \
     && rm -rf vim-better-whitespace && git clone --depth 1 https://github.com/ntpeters/vim-better-whitespace.git \
+    && rm -rf vim-bookmarks && git clone --depth 1 https://github.com/MattesGroeger/vim-bookmarks.git \
     && rm -rf vim-easymotion && git clone --depth 1 https://github.com/easymotion/vim-easymotion \
     && rm -rf vim-expand-region && git clone --depth 1 https://github.com/terryma/vim-expand-region \
     && rm -rf vim-fugitive && git clone --depth 1 https://github.com/tpope/vim-fugitive \
@@ -159,7 +161,6 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-surround && git clone --depth 1 https://github.com/tpope/vim-surround \
     && rm -rf vim-tmux-navigator && git clone --depth 1 https://github.com/christoomey/vim-tmux-navigator \
     && rm -rf YankRing.vim && git clone --depth 1 https://github.com/vim-scripts/YankRing.vim \
-    && rm -rf vim-abolish && git clone --depth 1 https://github.com/tpope/vim-abolish \
 # Theme
     && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized
 

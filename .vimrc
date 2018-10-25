@@ -48,3 +48,4 @@ set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,precedes:«,extends:»
 
 let NERDTreeShowHidden=1
 let g:ctrlp_show_hidden = 1
+nnoremap <Space>s/ :FlyGrep<cr>
