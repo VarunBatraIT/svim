@@ -42,8 +42,8 @@ let g:strip_whitelines_at_eof=1
 let g:show_spaces_that_precede_tabs=1
 let g:better_whitespace_skip_empty_lines=1
 set list
-set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,precedes:«,extends:»
-"set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
+set listchars=tab:→\ ,space:␣,nbsp:␣,trail:•,precedes:«,extends:»
+"set listchars=tab:→\ ,space:␣,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
 
 
 let NERDTreeShowHidden=1
