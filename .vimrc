@@ -44,7 +44,7 @@ let g:better_whitespace_skip_empty_lines=1
 set list
 set listchars=tab:→\ ,space:␣,nbsp:␣,trail:•,precedes:«,extends:»
 "set listchars=tab:→\ ,space:␣,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
-
+nnoremap <F3> :set list!<CR>
 
 let NERDTreeShowHidden=1
 let g:ctrlp_show_hidden = 1
