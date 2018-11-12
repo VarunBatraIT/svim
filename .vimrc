@@ -7,8 +7,8 @@ set term=xterm-256color
 " Indent Settings
 let g:indent_guides_auto_colors = 0
 let g:indent_guides_enable_on_vim_startup = 1
-autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=56
-autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=57
+"autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=56
+"autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=57
 "autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=black   ctermbg=3
 "autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=grey ctermbg=4
 set updatetime=100
@@ -48,3 +48,55 @@ nnoremap <F3> :set list!<CR>
 let NERDTreeShowHidden=1
 let g:ctrlp_show_hidden = 1
 nnoremap <Space>s/ :FlyGrep<cr>
+
+if v:version < 700 || exists('loaded_switchcolor') || &cp
+	finish
+endif
+
+let loaded_switchcolor = 1
+
+let paths = split(globpath(&runtimepath, 'colors/*.vim'), "\n")
+let s:swcolors = map(paths, 'fnamemodify(v:val, ":t:r")')
+let s:swskip = [ '256-jungle', '3dglasses', 'calmar256-light', 'coots-beauty-256', 'grb256' ]
+let s:swback = 0    " background variants light/dark was not yet switched
+let s:swindex = 0
+
+function! SwitchColor(swinc)
+
+	" if have switched background: dark/light
+	if (s:swback == 1)
+		let s:swback = 0
+		let s:swindex += a:swinc
+		let i = s:swindex % len(s:swcolors)
+
+		" in skip list
+		if (index(s:swskip, s:swcolors[i]) == -1)
+			execute "colorscheme " . s:swcolors[i]
+		else
+			return SwitchColor(a:swinc)
+		endif
+
+	else
+		let s:swback = 1
+		if (&background == "light")
+			execute "set background=dark"
+		else
+			execute "set background=light"
+		endif
+
+		" roll back if background is not supported
+		if (!exists('g:colors_name'))
+			return SwitchColor(a:swinc)
+		endif
+	endif
+
+	" show current name on screen. :h :echo-redraw
+	redraw
+	execute "colorscheme"
+endfunction
+
+ map <F8>        :call SwitchColor(1)<CR>
+imap <F8>   <Esc>:call SwitchColor(1)<CR>
+
+ map <S-F8>      :call SwitchColor(-1)<CR>
+imap <S-F8> <Esc>:call SwitchColor(-1)<CR>
