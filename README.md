@@ -17,7 +17,7 @@ List is [organized alphabetically](https://github.com/VarunBatraIT/svim/blob/mas
 Add this to your ~/.bashrc or ~/.zshrc depending on your configuration:
 
 ```
-alias svim='docker run -ti -e TERM=xterm -e GIT_USERNAME="You True" -e GIT_EMAIL="you@getyourdatasold"  --rm -v $(pwd):/home/developer/workspace varunbatrait/sim'
+alias svim='docker run -ti -e TERM=xterm -e GIT_USERNAME="You True" -e GIT_EMAIL="you@getyourdatasold"  --rm -v $(pwd):/home/developer/workspace varunbatrait/svim'
 ```
 
 Then use 
