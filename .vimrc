@@ -21,6 +21,13 @@ let s:grep_available = 0
 let g:gitgutter_realtime = 1
 au FocusLost * nested silent! wall
 
+set directory=/tmp/.vim/directory/
+set backupdir=/tmp/.vim/backupdir/
+set undodir=/tmp/.vim/undodir/
+set undofile
+
+
+
 nmap ]h <Plug>GitGutterNextHunk
 nmap [h <Plug>GitGutterPrevHunk
 nmap ]s <Plug>GitGutterStageHunk
