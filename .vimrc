@@ -21,9 +21,9 @@ let s:grep_available = 0
 let g:gitgutter_realtime = 1
 au FocusLost * nested silent! wall
 
-set directory=/tmp/.vim/directory/
-set backupdir=/tmp/.vim/backupdir/
-set undodir=/tmp/.vim/undodir/
+set directory=.vim/directory/
+set backupdir=.vim/backupdir/
+set undodir=.vim/undodir/
 set undofile
 
 
