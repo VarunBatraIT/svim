@@ -21,8 +21,11 @@ let s:grep_available = 0
 let g:gitgutter_realtime = 1
 au FocusLost * nested silent! wall
 
+silent !mkdir /home/developer/workspace/.vim/directory/ > /dev/null 2>&1
 set directory=/home/developer/workspace/.vim/directory/
+silent !mkdir /home/developer/workspace/.vim/backupdir/ > /dev/null 2>&1
 set backupdir=/home/developer/workspace/.vim/backupdir/
+silent !mkdir /home/developer/workspace/.vim/undodir/ > /dev/null 2>&1
 set undodir=/home/developer/workspace/.vim/undodir/
 set undofile
 
