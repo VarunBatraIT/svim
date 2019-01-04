@@ -29,6 +29,8 @@ silent !mkdir /home/developer/workspace/.vim/undodir/ > /dev/null 2>&1
 set undodir=/home/developer/workspace/.vim/undodir/
 set undofile
 
+autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
+autocmd FileType html setlocal shiftwidth=2 tabstop=2
 
 
 nmap ]h <Plug>GitGutterNextHunk
