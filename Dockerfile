@@ -148,6 +148,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-gitgutter && git clone --depth 1 https://github.com/airblade/vim-gitgutter \
     && rm -rf vim-go && git clone --depth 1 https://github.com/fatih/vim-go \
     && rm -rf vim-haml && git clone --depth 1 https://github.com/tpope/vim-haml \
+    && rm -rf vim-highlight-cursor-words && git clone --depth 1 https://github.com/pboettch/vim-highlight-cursor-words.git \
     && rm -rf vim-indent-guides && git clone --depth 1 https://github.com/nathanaelkane/vim-indent-guides \
     && rm -rf vim-indent-object && git clone --depth 1 https://github.com/michaeljsmith/vim-indent-object \
     && rm -rf vim-javascript && git clone --depth 1 https://github.com/pangloss/vim-javascript \
