@@ -30,6 +30,7 @@ set undodir=/home/developer/workspace/.vim/undodir/
 set undofile
 
 autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
+autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
 autocmd FileType html setlocal shiftwidth=2 tabstop=2
 
 
