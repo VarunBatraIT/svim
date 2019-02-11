@@ -40,6 +40,11 @@ nmap ]s <Plug>GitGutterStageHunk
 nmap ]u <Plug>GitGutterUndoHunk
 
 
+let g:comfortable_motion_no_default_key_mappings = 1
+let g:comfortable_motion_scroll_down_key = "j"
+let g:comfortable_motion_scroll_up_key = "k"
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Snippets
 " """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
