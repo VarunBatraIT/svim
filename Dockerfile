@@ -153,6 +153,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-indent-object && git clone --depth 1 https://github.com/michaeljsmith/vim-indent-object \
     && rm -rf vim-javascript && git clone --depth 1 https://github.com/pangloss/vim-javascript \
     && rm -rf vim-json && git clone --depth 1 https://github.com/elzr/vim-json \
+    && rm -rf vim-jsx && git clone --depth 1 https://github.com/mxw/vim-jsx \
     && rm -rf vim-less && git clone --depth 1 https://github.com/groenewege/vim-less \
     && rm -rf vim-markdown && git clone --depth 1 https://github.com/plasticboy/vim-markdown \
     && rm -rf vim-multiple-cursors && git clone --depth 1 https://github.com/terryma/vim-multiple-cursors \
