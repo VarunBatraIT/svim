@@ -135,6 +135,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf taglist.vim && git clone --depth 1 https://github.com/vim-scripts/taglist.vim \
     && rm -rf tlib-vim && git clone --depth 1 https://github.com/tomtom/tlib_vim \
     && rm -rf typescript-vim && git clone --depth 1 https://github.com/leafgarland/typescript-vim.git \
+    && rm -rf tsuquyomi && git clone --depth 1 https://github.com/Quramy/tsuquyomi.git \
     && rm -rf ultisnips && git clone --depth 1 https://github.com/SirVer/ultisnips \
     && rm -rf undotree && git clone --depth 1 https://github.com/mbbill/undotree \
     && rm -rf vim-abolish && git clone --depth 1 https://github.com/tpope/vim-abolish \
