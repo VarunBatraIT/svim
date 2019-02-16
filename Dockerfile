@@ -94,6 +94,28 @@ RUN apk --update add \
     /var/tmp/* \
     && mkdir /var/cache/apk
 
+# Install Make
+
+# Install PHP
+
+RUN apk --no-cache add autoconf automake gcc g++ clang make php7 php-openssl php-json php-phar php-mbstring php-iconv php-session php-pdo php-pcntl php-tokenizer php-curl php-dom php-xml php-xmlwriter
+
+RUN php -r "copy('https://getcomposer.org/download/1.8.4/composer.phar', 'composer.phar');" \
+    && php -r "if (hash_file('sha256', 'composer.phar') === '1722826c8fbeaf2d6cdd31c9c9af38694d6383a0f2bf476fe6bbd30939de058a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer.phar'); } echo PHP_EOL;" \
+    && chmod +x composer.phar \
+    && mv composer.phar /usr/local/bin/composer
+
+# Install Node
+
+RUN apk --no-cache add nodejs
+
+RUN apk --no-cache add npm
+
+# Install Node Related
+
+RUN npm -g install typescript eslint
+
+
 USER $UNAME
 
 
@@ -164,8 +186,19 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-surround && git clone --depth 1 https://github.com/tpope/vim-surround \
     && rm -rf vim-tmux-navigator && git clone --depth 1 https://github.com/christoomey/vim-tmux-navigator \
     && rm -rf YankRing.vim && git clone --depth 1 https://github.com/vim-scripts/YankRing.vim \
-# Theme
+    && rm -rf tsuquyomi && git clone --depth 1 https://github.com/Quramy/tsuquyomi.git \
+    && rm -rf vimproc && git clone --depth 1 https://github.com/Shougo/vimproc.vim.git \
+    && rm -rf unite.vim && git clone --depth 1 https://github.com/Shougo/unite.vim.git \
+    && rm -rf phpactor && git clone --depth 1 https://github.com/phpactor/phpactor.git \
     && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized
+
+# Further for PHP
+RUN cd $UHOME/.vim_runtime/sources_non_forked && cd phpactor && composer install
+
+# Further for Typescript
+RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && cd $UHOME/.vim_runtime/sources_non_forked/vimproc.vim \
+    && make
 
 # More plugins
 
