@@ -2,6 +2,8 @@ set background=dark
 colorscheme solarized
 set relativenumber
 set number
+set cursorcolumn
+set cursorline
 set t_Co=256
 set term=xterm-256color
 " Indent Settings
@@ -29,6 +31,7 @@ silent !mkdir /home/developer/workspace/.vim/undodir/ > /dev/null 2>&1
 set undodir=/home/developer/workspace/.vim/undodir/
 set undofile
 
+autocmd FileType javascript.jsx setlocal shiftwidth=2 tabstop=2
 autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
 autocmd FileType html setlocal shiftwidth=2 tabstop=2
