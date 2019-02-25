@@ -125,4 +125,6 @@ imap <S-F8> <Esc>:call SwitchColor(-1)<CR>
 
 let g:tsuquyomi_disable_quickfix = 1
 let g:syntastic_typescript_checkers = ['tsuquyomi'] " You shouldn't use 'tsc' checker.
-
+let g:syntastic_typescript_tsc_fname = ''
+let g:syntastic_typescript_tsc_args = " -p /home/developer/workspace/tsconfig.json "
+autocmd FileType typescript :set makeprg="tsc -p /home/developer/workspace/tsconfig.json "
