@@ -1,4 +1,46 @@
-FROM jare/alpine-vim:latest
+FROM alpine:latest as builder
+
+WORKDIR /tmp
+
+# Install dependencies
+RUN apk add --no-cache \
+    build-base \
+    ctags \
+    git \
+    libx11-dev \
+    libxpm-dev \
+    libxt-dev \
+    make \
+    ncurses-dev \
+    python \
+    python-dev
+
+# Build vim from git source
+RUN git clone https://github.com/vim/vim \
+ && cd vim \
+ && ./configure \
+    --disable-gui \
+    --disable-netbeans \
+    --enable-multibyte \
+    --enable-pythoninterp \
+    --with-features=big \
+    --with-python-config-dir=/usr/lib/python2.7/config \
+ && make install
+
+ FROM alpine:latest
+
+ COPY --from=builder /usr/local/bin/ /usr/local/bin
+ COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
+ # NOTE: man page is ignored
+
+ RUN apk add --no-cache \
+    diffutils \
+    libice \
+    libsm \
+    libx11 \
+    libxt \
+    ncurses
+
 
 # User config
 ENV UID="1000" \
@@ -67,20 +109,22 @@ RUN apk --update add \
     go \
     llvm \
     perl \
-    python-dev \
-    && git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
+    python-dev
+RUN git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
     $UHOME/bundle/YouCompleteMe/ \
     && cd $UHOME/bundle/YouCompleteMe \
     && git submodule update --init --recursive \
-    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer \
-# Install and compile procvim.vim
-    && git clone --depth 1 https://github.com/Shougo/vimproc.vim \
+    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --clang-completer
+RUN cd $UHOME/bundle/YouCompleteMe/ \
+    && cd third_party/ycmd/third_party/ && rm -rf gocode && git clone --depth 1 https://github.com/mdempsky/gocode.git && cd gocode && go mod init && go build .
+    # Install and compile procvim.vim
+RUN git clone --depth 1 https://github.com/Shougo/vimproc.vim \
     $UHOME/bundle/vimproc.vim \
     && cd $UHOME/bundle/vimproc.vim \
     && make \
-    && chown $UID:$GID -R $UHOME \
+    && chown $UID:$GID -R $UHOME
 # Cleanup
-    && apk del build-deps \
+RUN apk del build-deps \
     && apk add \
     libxt \
     libx11 \
@@ -88,10 +132,10 @@ RUN apk --update add \
     && rm -rf \
     $UHOME/bundle/YouCompleteMe/third_party/ycmd/clang_includes \
     $UHOME/bundle/YouCompleteMe/third_party/ycmd/cpp \
-    /usr/lib/go \
-    /var/cache/* \
-    /var/log/* \
-    /var/tmp/* \
+    /usr/lib/go -rf \
+    /var/cache/* -rf \
+    /var/log/* -rf \
+    /var/tmp/* -rf \
     && mkdir /var/cache/apk
 
 # Install Make
