@@ -2,6 +2,8 @@
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:$GOBIN
 cd /home/developer
 echo "let g:pathogen_disabled = [$DISABLE]" >> .vimrc
+echo "let g:go_autodetect_gopath = 1" >> .vimrc
+echo "let g:go_def_mode = 'godef'" >> .vimrc
 echo "execute pathogen#infect('/ext/bundle/{}')" >> .vimrc
 cat .vimrc~ >> .vimrc
 echo "source /ext/.vimrc" >> .vimrc
