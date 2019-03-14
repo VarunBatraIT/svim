@@ -33,15 +33,6 @@ RUN git clone https://github.com/vim/vim \
  COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
  # NOTE: man page is ignored
 
- RUN apk add --no-cache \
-    diffutils \
-    libice \
-    libsm \
-    libx11 \
-    libxt \
-    ncurses
-
-
 # User config
 ENV UID="1000" \
     UNAME="developer" \
@@ -49,17 +40,13 @@ ENV UID="1000" \
     GNAME="developer" \
     SHELL="/bin/bash" \
     UHOME=/home/developer
-
-# Used to configure YouCompleteMe
-RUN apk add --no-cache libc6-compat musl
-
 ENV GOROOT="/usr/lib/go"
 ENV GOBIN="$GOROOT/bin"
 ENV GOPATH="$UHOME/workspace"
 ENV PATH="$PATH:$GOBIN:$GOPATH/bin"
 
 # User
-RUN apk --no-cache add sudo \
+RUN apk --no-cache add sudo libc6-compat musl \
 # Create HOME dir
     && mkdir -p "${UHOME}" \
     && chown "${UID}":"${GID}" "${UHOME}" \
@@ -74,10 +61,9 @@ RUN apk --no-cache add sudo \
     && chmod 0440 "/etc/sudoers.d/${UNAME}" \
 # Create group
     && echo "${GNAME}:x:${GID}:${UNAME}" \
-    >> /etc/group
-
+    >> /etc/group \
 # Install Pathogen
-RUN apk --no-cache add curl \
+    && apk --no-cache add curl \
     && mkdir -p \
     $UHOME/bundle \
     $UHOME/.vim/autoload \
@@ -90,14 +76,18 @@ RUN apk --no-cache add curl \
     && echo "syntax on " \
     >> $UHOME/.vimrc \
     && echo "filetype plugin indent on " \
-    >> $UHOME/.vimrc
-
+    >> $UHOME/.vimrc \
 #custom .vimrc stub
-RUN mkdir -p /ext  && echo " " > /ext/.vimrc
-
+    && mkdir -p /ext  && echo " " > /ext/.vimrc \
 # Vim plugins deps
-RUN apk --update add \
+    && apk --update add \
     openssh-client \
+    diffutils \
+    libice \
+    libsm \
+    libx11 \
+    libxt \
+    ncurses \
     bash \
     ctags \
     curl \
@@ -111,66 +101,51 @@ RUN apk --update add \
     go \
     llvm \
     perl \
-    python-dev
+    python-dev \
 # Install PHP
-
-RUN apk --no-cache add autoconf automake gcc g++ clang make php7 php-openssl php-json php-phar php-mbstring php-iconv php-session php-pdo php-pcntl php-tokenizer php-curl php-dom php-xml php-xmlwriter
-
-RUN php -r "copy('https://getcomposer.org/download/1.8.4/composer.phar', 'composer.phar');" \
+    && apk --no-cache add autoconf automake gcc g++ clang make php7 php-openssl php-json php-phar php-mbstring php-iconv php-session php-pdo php-pcntl php-tokenizer php-curl php-dom php-xml php-xmlwriter \
+    && php -r "copy('https://getcomposer.org/download/1.8.4/composer.phar', 'composer.phar');" \
     && php -r "if (hash_file('sha256', 'composer.phar') === '1722826c8fbeaf2d6cdd31c9c9af38694d6383a0f2bf476fe6bbd30939de058a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer.phar'); } echo PHP_EOL;" \
     && chmod +x composer.phar \
-    && mv composer.phar /usr/local/bin/composer
-
+    && mv composer.phar /usr/local/bin/composer \
 # Install Node
-
-RUN apk --no-cache add nodejs
-
-RUN apk --no-cache add npm
-
+    && apk --no-cache add nodejs npm \
 # Install Node Related
-
-RUN npm -g install typescript eslint
-
-RUN git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
+    && npm -g install typescript eslint \
+    # You complete me
+    && git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
     $UHOME/bundle/YouCompleteMe/ \
     && cd $UHOME/bundle/YouCompleteMe \
     && git submodule update --init --recursive \
-    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --ts-completer
-RUN cd $UHOME/bundle/YouCompleteMe/ \
-    && cd third_party/ycmd/third_party/ && rm -rf gocode && git clone --depth 1 https://github.com/mdempsky/gocode.git && cd gocode && go mod init && go build .
+    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --ts-completer \
+    && cd $UHOME/bundle/YouCompleteMe/ \
+    && cd third_party/ycmd/third_party/ && rm -rf gocode && git clone --depth 1 https://github.com/mdempsky/gocode.git && cd gocode && go mod init && go build . \
     # Install and compile procvim.vim
-RUN git clone --depth 1 https://github.com/Shougo/vimproc.vim \
+    && git clone --depth 1 https://github.com/Shougo/vimproc.vim \
     $UHOME/bundle/vimproc.vim \
     && cd $UHOME/bundle/vimproc.vim \
     && make \
-    && chown $UID:$GID -R $UHOME
-
+    && chown $UID:$GID -R $UHOME \
+    && apk add \
+    libxt \
+    libx11 \
+    libstdc++ \
+    && chown $UNAME:root -R /usr/lib/go/
 
 
 USER $UNAME
 
-
-
 COPY .vimrc $UHOME/my.vimrc
-
-
 # Build default .vimrc
 RUN  mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
-	 && git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x
-RUN  cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
+	 && git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x \
+     && cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
 	 && sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
-     && cat  $UHOME/my.vimrc \
-     >> $UHOME/.vimrc~ \
-     # && rm $UHOME/my.vimrc \
-     && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~
-
-# Pathogen help tags generation
-RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
-
-RUN echo "set backspace=indent,eol,start" >> $UHOME/.vimrc~
-
+     && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
+     && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~ \
+    && echo "set backspace=indent,eol,start" >> $UHOME/.vimrc~ \
 # Plugins
-RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf bufexplorer && git clone --depth 1 https://github.com/jlanzarotta/bufexplorer \
     && rm -rf ctrlp.vim && git clone --depth 1 https://github.com/kien/ctrlp.vim \
     && rm -rf delimitMate && git clone --depth 1 https://github.com/Raimondi/delimitMate \
@@ -185,8 +160,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf syntastic && git clone --depth 1 https://github.com/scrooloose/syntastic \
     && rm -rf tabular && git clone --depth 1 https://github.com/godlygeek/tabular \
     && rm -rf tagbar && git clone --depth 1 https://github.com/majutsushi/tagbar \
-    && rm -rf taglist.vim && git clone --depth 1 https://github.com/vim-scripts/taglist.vim
-RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && rm -rf taglist.vim && git clone --depth 1 https://github.com/vim-scripts/taglist.vim \
     && rm -rf tlib-vim && git clone --depth 1 https://github.com/tomtom/tlib_vim \
     && rm -rf typescript-vim && git clone --depth 1 https://github.com/leafgarland/typescript-vim.git \
     && rm -rf ultisnips && git clone --depth 1 https://github.com/SirVer/ultisnips \
@@ -199,8 +173,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-easymotion && git clone --depth 1 https://github.com/easymotion/vim-easymotion \
     && rm -rf vim-expand-region && git clone --depth 1 https://github.com/terryma/vim-expand-region \
     && rm -rf vim-fugitive && git clone --depth 1 https://github.com/tpope/vim-fugitive \
-    && rm -rf vim-gitgutter && git clone --depth 1 https://github.com/airblade/vim-gitgutter
-RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && rm -rf vim-gitgutter && git clone --depth 1 https://github.com/airblade/vim-gitgutter \
     && rm -rf vim-go && git clone --depth 1 https://github.com/fatih/vim-go \
     && rm -rf vim-haml && git clone --depth 1 https://github.com/tpope/vim-haml \
     && rm -rf vim-highlight-cursor-words && git clone --depth 1 https://github.com/pboettch/vim-highlight-cursor-words.git \
@@ -213,8 +186,7 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vim-markdown && git clone --depth 1 https://github.com/plasticboy/vim-markdown \
     && rm -rf vim-multiple-cursors && git clone --depth 1 https://github.com/terryma/vim-multiple-cursors \
     && rm -rf vim-nertree-tabs && git clone --depth 1 https://github.com/jistr/vim-nerdtree-tabs \
-    && rm -rf vim-repeat && git clone --depth 1 https://github.com/tpope/vim-repeat
-RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && rm -rf vim-repeat && git clone --depth 1 https://github.com/tpope/vim-repeat \
     && rm -rf vim-scala -rf && git clone --depth 1 https://github.com/derekwyatt/vim-scala \
     && rm -rf vim-snippets && git clone --depth 1 https://github.com/honza/vim-snippets \
     && rm -rf vim-surround && git clone --depth 1 https://github.com/tpope/vim-surround \
@@ -224,89 +196,61 @@ RUN cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf vimproc && git clone --depth 1 https://github.com/Shougo/vimproc.vim.git \
     && rm -rf unite.vim && git clone --depth 1 https://github.com/Shougo/unite.vim.git \
     && rm -rf phpactor && git clone --depth 1 https://github.com/phpactor/phpactor.git \
-    && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized
-
+    && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized \
 # Further for PHP
-RUN cd $UHOME/.vim_runtime/sources_non_forked && cd phpactor && composer install
-
+    && cd $UHOME/.vim_runtime/sources_non_forked && cd phpactor && composer install \
 # Further for Typescript
-RUN cd $UHOME/.vim_runtime/sources_non_forked \
+    && cd $UHOME/.vim_runtime/sources_non_forked \
     && cd $UHOME/.vim_runtime/sources_non_forked/vimproc.vim \
     && make
 
+# Pathogen help tags generation
+RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0 \
 # More plugins
 
-USER root
-# Cleanup
-RUN apk add \
-    libxt \
-    libx11 \
-    libstdc++
-RUN chown $UNAME:root -R /usr/lib/go/
-USER $UNAME
 
-RUN go get -v -u -d github.com/klauspost/asmfmt/cmd/asmfmt
-RUN go build -o $GOBIN/asmfmt github.com/klauspost/asmfmt/cmd/asmfmt
-
-RUN go get -v -u -d github.com/go-delve/delve/cmd/dlv
-RUN go build -o $GOBIN/dlv github.com/go-delve/delve/cmd/dlv
-
-RUN go get -v -u -d github.com/kisielk/errcheck
-RUN go build -o $GOBIN/errcheck github.com/kisielk/errcheck
-
-RUN go get -v -u -d github.com/davidrjenni/reftools/cmd/fillstruct
-RUN go build -o $GOBIN/fillstruct github.com/davidrjenni/reftools/cmd/fillstruct
-
-RUN go get -v -u -d github.com/mdempsky/gocode
-RUN go build -o $GOBIN/gocode github.com/mdempsky/gocode
-
-RUN go get -v -u -d github.com/stamblerre/gocode
-RUN go build -o $GOBIN/gocode-gomod github.com/stamblerre/gocode
-
-RUN go get -v -u -d github.com/rogpeppe/godef
-RUN go build -o $GOBIN/godef github.com/rogpeppe/godef
-
-RUN go get -v -u -d github.com/zmb3/gogetdoc
-RUN go build -o $GOBIN/gogetdoc github.com/zmb3/gogetdoc
-
-RUN go get -v -u -d golang.org/x/tools/cmd/goimports
-RUN go build -o $GOBIN/goimports golang.org/x/tools/cmd/goimports
-
-RUN go get -v -u -d golang.org/x/lint/golint
-RUN go build -o $GOBIN/golint golang.org/x/lint/golint
-
-RUN go get -v -u -d golang.org/x/tools/cmd/gopls
-RUN go build -o $GOBIN/gopls golang.org/x/tools/cmd/gopls
-
-RUN go get -v -u -d github.com/alecthomas/gometalinter
-RUN go build -o $GOBIN/gometalinter github.com/alecthomas/gometalinter
-
-RUN go get -v -u -d github.com/fatih/gomodifytags
-RUN go build -o $GOBIN/gomodifytags github.com/fatih/gomodifytags
-
-RUN go get -v -u -d golang.org/x/tools/cmd/gorename
-RUN go build -o $GOBIN/gorename golang.org/x/tools/cmd/gorename
-
-RUN go get -v -u -d github.com/jstemmer/gotags
-RUN go build -o $GOBIN/gotags github.com/jstemmer/gotags
-
-RUN go get -v -u -d golang.org/x/tools/cmd/guru
-RUN go build -o $GOBIN/guru golang.org/x/tools/cmd/guru
-
-RUN go get -v -u -d github.com/josharian/impl
-RUN go build -o $GOBIN/impl github.com/josharian/impl
-
-RUN go get -v -u -d honnef.co/go/tools/cmd/keyify
-RUN go build -o $GOBIN/keyify honnef.co/go/tools/cmd/keyify
-
-RUN go get -v -u -d github.com/fatih/motion
-RUN go build -o $GOBIN/motion github.com/fatih/motion
-
-RUN go get -v -u -d github.com/koron/iferr
-RUN go build -o $GOBIN/iferr github.com/koron/iferr
-
-RUN echo "bind -r '\C-s'" >> $UHOME/.bashrc
-RUN echo "tty -ixon" >> $UHOME/.bashrc
+RUN go get -v -u -d github.com/klauspost/asmfmt/cmd/asmfmt \
+    && go build -o $GOBIN/asmfmt github.com/klauspost/asmfmt/cmd/asmfmt \
+    && go get -v -u -d github.com/go-delve/delve/cmd/dlv \
+    && go build -o $GOBIN/dlv github.com/go-delve/delve/cmd/dlv \
+    && go get -v -u -d github.com/kisielk/errcheck \
+    && go build -o $GOBIN/errcheck github.com/kisielk/errcheck \
+    && go get -v -u -d github.com/davidrjenni/reftools/cmd/fillstruct \
+    && go build -o $GOBIN/fillstruct github.com/davidrjenni/reftools/cmd/fillstruct \
+    && go get -v -u -d github.com/mdempsky/gocode \
+    && go build -o $GOBIN/gocode github.com/mdempsky/gocode \
+    && go get -v -u -d github.com/stamblerre/gocode \
+    && go build -o $GOBIN/gocode-gomod github.com/stamblerre/gocode \
+    && go get -v -u -d github.com/rogpeppe/godef \
+    && go build -o $GOBIN/godef github.com/rogpeppe/godef \
+    && go get -v -u -d github.com/zmb3/gogetdoc \
+    && go build -o $GOBIN/gogetdoc github.com/zmb3/gogetdoc \
+    && go get -v -u -d golang.org/x/tools/cmd/goimports \
+    && go build -o $GOBIN/goimports golang.org/x/tools/cmd/goimports \
+    && go get -v -u -d golang.org/x/lint/golint \
+    && go build -o $GOBIN/golint golang.org/x/lint/golint \
+    && go get -v -u -d golang.org/x/tools/cmd/gopls \
+    && go build -o $GOBIN/gopls golang.org/x/tools/cmd/gopls \
+    && go get -v -u -d github.com/alecthomas/gometalinter \
+    && go build -o $GOBIN/gometalinter github.com/alecthomas/gometalinter \
+    && go get -v -u -d github.com/fatih/gomodifytags \
+    && go build -o $GOBIN/gomodifytags github.com/fatih/gomodifytags \
+    && go get -v -u -d golang.org/x/tools/cmd/gorename \
+    && go build -o $GOBIN/gorename golang.org/x/tools/cmd/gorename \
+    && go get -v -u -d github.com/jstemmer/gotags \
+    && go build -o $GOBIN/gotags github.com/jstemmer/gotags \
+    && go get -v -u -d golang.org/x/tools/cmd/guru \
+    && go build -o $GOBIN/guru golang.org/x/tools/cmd/guru \
+    && go get -v -u -d github.com/josharian/impl \
+    && go build -o $GOBIN/impl github.com/josharian/impl \
+    && go get -v -u -d honnef.co/go/tools/cmd/keyify \
+    && go build -o $GOBIN/keyify honnef.co/go/tools/cmd/keyify \
+    && go get -v -u -d github.com/fatih/motion \
+    && go build -o $GOBIN/motion github.com/fatih/motion \
+    && go get -v -u -d github.com/koron/iferr \
+    && go build -o $GOBIN/iferr github.com/koron/iferr \
+    && echo "bind -r '\C-s'" >> $UHOME/.bashrc \
+    && echo "tty -ixon" >> $UHOME/.bashrc
 
 ENV TERM=xterm-256color
 
@@ -317,7 +261,7 @@ ENV DISABLE=""
 COPY run /usr/local/bin/
 
 USER root
-RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf
+# RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf && rm -rf /var/cache/apk/*
 USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
