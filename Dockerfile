@@ -305,7 +305,6 @@ RUN go build -o $GOBIN/motion github.com/fatih/motion
 RUN go get -v -u -d github.com/koron/iferr
 RUN go build -o $GOBIN/iferr github.com/koron/iferr
 
-
 RUN echo "bind -r '\C-s'" >> $UHOME/.bashrc
 RUN echo "tty -ixon" >> $UHOME/.bashrc
 
@@ -316,5 +315,9 @@ ENV DISABLE=""
 
 # Vim wrapper
 COPY run /usr/local/bin/
+
+USER root
+RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf
+USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
