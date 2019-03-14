@@ -202,14 +202,9 @@ RUN  mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
 # Further for Typescript
     && cd $UHOME/.vim_runtime/sources_non_forked \
     && cd $UHOME/.vim_runtime/sources_non_forked/vimproc.vim \
-    && make
-
-# Pathogen help tags generation
-RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0 \
-# More plugins
-
-
-RUN go get -v -u -d github.com/klauspost/asmfmt/cmd/asmfmt \
+    && make \
+    # Go requirements
+    && go get -v -u -d github.com/klauspost/asmfmt/cmd/asmfmt \
     && go build -o $GOBIN/asmfmt github.com/klauspost/asmfmt/cmd/asmfmt \
     && go get -v -u -d github.com/go-delve/delve/cmd/dlv \
     && go build -o $GOBIN/dlv github.com/go-delve/delve/cmd/dlv \
@@ -252,6 +247,10 @@ RUN go get -v -u -d github.com/klauspost/asmfmt/cmd/asmfmt \
     && echo "bind -r '\C-s'" >> $UHOME/.bashrc \
     && echo "tty -ixon" >> $UHOME/.bashrc
 
+# Pathogen help tags generation
+RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
+# More plugins
+
 ENV TERM=xterm-256color
 
 # List of Vim plugins to disable
@@ -261,7 +260,7 @@ ENV DISABLE=""
 COPY run /usr/local/bin/
 
 USER root
-# RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf && rm -rf /var/cache/apk/*
+RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf && rm -rf /var/cache/apk/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/
 USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
