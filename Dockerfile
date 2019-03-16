@@ -260,6 +260,7 @@ RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
 
 USER root
 RUN cd $UHOME && rm -rf $GOPATH/src/ &&  rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -rf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && apk del build-deps
+RUN chmod 1777 /tmp
 USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
