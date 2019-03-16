@@ -99,11 +99,11 @@ RUN apk --no-cache add sudo libc6-compat musl \
     git \
     ncurses-terminfo \
     python \
+    go \
 # YouCompleteMe
     && apk add --virtual build-deps \
     build-base \
     cmake \
-    go \
     llvm \
     perl \
     python-dev \
@@ -258,7 +258,7 @@ RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
 # More plugins
 
 USER root
-RUN cd $UHOME && rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -vrf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && rm -rf $GOROOT
+RUN cd $UHOME && rm -rf $GOPATH/src/ &&  rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -vrf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && apk del build-deps
 USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
