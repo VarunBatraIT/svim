@@ -8,6 +8,7 @@ echo "execute pathogen#infect('/ext/bundle/{}')" >> .vimrc
 cat .vimrc~ >> .vimrc
 echo "source /ext/.vimrc" >> .vimrc
 cd /home/developer/workspace/
+export TMPDIR="/tmp/"
 git config --global user.name "$GIT_USERNAME"
 git config --global user.email "$GIT_EMAIL"
 stty stop '' -ixoff ; vim $@
