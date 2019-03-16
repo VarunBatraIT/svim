@@ -27,11 +27,7 @@ RUN git clone https://github.com/vim/vim \
     --with-python-config-dir=/usr/lib/python2.7/config \
  && make install
 
- FROM alpine:latest
-
- COPY --from=builder /usr/local/bin/ /usr/local/bin
- COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
- # NOTE: man page is ignored
+FROM alpine:latest
 
 # User config
 ENV UID="1000" \
@@ -44,6 +40,15 @@ ENV GOROOT="/usr/lib/go"
 ENV GOBIN="$GOROOT/bin"
 ENV GOPATH="$UHOME/workspace"
 ENV PATH="$PATH:$GOBIN:$GOPATH/bin"
+ENV TERM=xterm-256color
+# List of Vim plugins to disable
+ENV DISABLE=""
+
+COPY --from=builder /usr/local/bin/ /usr/local/bin
+COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
+# Vim wrapper
+COPY run /usr/local/bin/
+ # NOTE: man page is ignored
 
 # User
 RUN apk --no-cache add sudo libc6-compat musl \
@@ -112,6 +117,7 @@ RUN apk --no-cache add sudo libc6-compat musl \
     && apk --no-cache add nodejs npm \
 # Install Node Related
     && npm -g install typescript eslint \
+    && npm cache clean --force \
     # You complete me
     && git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
     $UHOME/bundle/YouCompleteMe/ \
@@ -137,12 +143,12 @@ USER $UNAME
 
 COPY .vimrc $UHOME/my.vimrc
 # Build default .vimrc
-RUN  mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
-	 && git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x \
-     && cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
-	 && sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
-     && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
-     && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~ \
+RUN mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
+	&& git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x \
+    && cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
+	&& sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
+    && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
+    && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~ \
     && echo "set backspace=indent,eol,start" >> $UHOME/.vimrc~ \
 # Plugins
     && cd $UHOME/.vim_runtime/sources_non_forked \
@@ -251,16 +257,8 @@ RUN  mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
 RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
 # More plugins
 
-ENV TERM=xterm-256color
-
-# List of Vim plugins to disable
-ENV DISABLE=""
-
-# Vim wrapper
-COPY run /usr/local/bin/
-
 USER root
-RUN cd $UHOME && find . | grep "\.git/" | xargs rm -rvf && rm -rf /var/cache/apk/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/
+RUN cd $UHOME && rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -vrf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && rm -rf $GOROOT
 USER $UNAME
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
