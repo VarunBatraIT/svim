@@ -40,14 +40,9 @@ ENV GOROOT="/usr/lib/go"
 ENV GOBIN="$GOROOT/bin"
 ENV GOPATH="$UHOME/workspace"
 ENV PATH="$PATH:$GOBIN:$GOPATH/bin"
-ENV TERM=xterm-256color
-# List of Vim plugins to disable
-ENV DISABLE=""
 
 COPY --from=builder /usr/local/bin/ /usr/local/bin
 COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
-# Vim wrapper
-COPY run /usr/local/bin/
  # NOTE: man page is ignored
 
 # User
@@ -76,12 +71,6 @@ RUN apk --no-cache add sudo libc6-compat musl \
     && curl -LSso \
     $UHOME/.vim/autoload/pathogen.vim \
     https://tpo.pe/pathogen.vim \
-    && echo "execute pathogen#infect('$UHOME/bundle/{}')" \
-    > $UHOME/.vimrc \
-    && echo "syntax on " \
-    >> $UHOME/.vimrc \
-    && echo "filetype plugin indent on " \
-    >> $UHOME/.vimrc \
 #custom .vimrc stub
     && mkdir -p /ext  && echo " " > /ext/.vimrc \
 # Vim plugins deps
@@ -118,13 +107,15 @@ RUN apk --no-cache add sudo libc6-compat musl \
     && apk --no-cache add nodejs npm \
 # Install Node Related
     && npm -g install typescript tslint eslint prettier \
-    && npm cache clean --force \
+    && npm cache clean --force
+
     # You complete me
-    && git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
+RUN  git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
     $UHOME/bundle/YouCompleteMe/ \
     && cd $UHOME/bundle/YouCompleteMe \
     && git submodule update --init --recursive \
-    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --ts-completer \
+    # && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --ts-completer \
+    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer \
     && cd $UHOME/bundle/YouCompleteMe/ \
     && cd third_party/ycmd/third_party/ && rm -rf gocode && git clone --depth 1 https://github.com/mdempsky/gocode.git && cd gocode && go mod init && go build . \
     # Install and compile procvim.vim
@@ -142,15 +133,9 @@ RUN apk --no-cache add sudo libc6-compat musl \
 
 USER $UNAME
 
-COPY .vimrc $UHOME/my.vimrc
-# Build default .vimrc
-RUN mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
-	&& git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x \
+RUN git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x \
     && cp -r $UHOME/.vim_runtime_x/* $UHOME/.vim_runtime/ \
 	&& sh $UHOME/.vim_runtime/install_awesome_vimrc.sh \
-    && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
-    && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~ \
-    && echo "set backspace=indent,eol,start" >> $UHOME/.vimrc~ \
 # Plugins
     && cd $UHOME/.vim_runtime/sources_non_forked \
     && rm -rf bufexplorer && git clone --depth 1 https://github.com/jlanzarotta/bufexplorer \
@@ -262,5 +247,25 @@ USER root
 RUN cd $UHOME && rm -rf $GOPATH/src/ &&  rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -rf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && apk del build-deps
 RUN chmod 1777 /tmp
 USER $UNAME
+COPY .vimrc $UHOME/my.vimrc
+# Build default .vimrc
+
+RUN mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
+    && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
+    && sed -i '/colorscheme peaksea/d' $UHOME/.vimrc~ \
+    && echo "set backspace=indent,eol,start" >> $UHOME/.vimrc~ \
+    && echo "execute pathogen#infect('$UHOME/bundle/{}')" \
+    > $UHOME/.vimrc \
+    && echo "syntax on " \
+    >> $UHOME/.vimrc \
+    && echo "filetype plugin indent on " \
+    && echo "" \
+    >> $UHOME/.vimrc
+
+# List of Vim plugins to disable
+ENV DISABLE=""
+ENV TERM=xterm-256color
+# Vim wrapper
+COPY run /usr/local/bin/
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
