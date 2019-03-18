@@ -117,7 +117,7 @@ RUN apk --no-cache add sudo libc6-compat musl \
 # Install Node
     && apk --no-cache add nodejs npm \
 # Install Node Related
-    && npm -g install typescript eslint \
+    && npm -g install typescript tslint eslint prettier \
     && npm cache clean --force \
     # You complete me
     && git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
