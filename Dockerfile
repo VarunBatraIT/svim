@@ -1,33 +1,7 @@
-FROM alpine:latest as builder
+FROM ubuntu:18.04
 
 WORKDIR /tmp
 
-# Install dependencies
-RUN apk add --no-cache \
-    build-base \
-    ctags \
-    git \
-    libx11-dev \
-    libxpm-dev \
-    libxt-dev \
-    make \
-    ncurses-dev \
-    python \
-    python-dev
-
-# Build vim from git source
-RUN git clone https://github.com/vim/vim \
- && cd vim \
- && ./configure \
-    --disable-gui \
-    --disable-netbeans \
-    --enable-multibyte \
-    --enable-pythoninterp \
-    --with-features=big \
-    --with-python-config-dir=/usr/lib/python2.7/config \
- && make install
-
-FROM alpine:latest
 
 # User config
 ENV UID="1000" \
@@ -40,15 +14,19 @@ ENV GOROOT="/usr/lib/go"
 ENV GOBIN="$GOROOT/bin"
 ENV GOPATH="$UHOME/workspace"
 ENV PATH="$PATH:$GOBIN:$GOPATH/bin"
+ENV TZ=Asia/Kolkata
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-COPY --from=builder /usr/local/bin/ /usr/local/bin
-COPY --from=builder /usr/local/share/vim/ /usr/local/share/vim/
  # NOTE: man page is ignored
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse" >> /etc/apt/sources.list && \
+    DEBIAN_FRONTEND=noninteractive apt-get update
+RUN apt-get install vim vim-nox  -y
 
 # User
-RUN apk --no-cache add sudo libc6-compat musl \
 # Create HOME dir
-    && mkdir -p "${UHOME}" \
+RUN mkdir -p "${UHOME}" \
     && chown "${UID}":"${GID}" "${UHOME}" \
 # Create user
     && echo "${UNAME}:x:${UID}:${GID}:${UNAME},,,:${UHOME}:${SHELL}" \
@@ -57,14 +35,14 @@ RUN apk --no-cache add sudo libc6-compat musl \
     >> /etc/shadow \
 # No password sudo
     && echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" \
-    > "/etc/sudoers.d/${UNAME}" \
-    && chmod 0440 "/etc/sudoers.d/${UNAME}" \
+    > "/etc/sudoers.d" \
+    && chmod 0440 "/etc/sudoers.d" \
 # Create group
     && echo "${GNAME}:x:${GID}:${UNAME}" \
-    >> /etc/group \
+    >> /etc/group
+RUN apt-get install -y curl openssh-client  diffutils bash ctags curl git python python3 golang cmake llvm perl python-dev autoconf  automake  gcc g++ clang make
 # Install Pathogen
-    && apk --no-cache add curl \
-    && mkdir -p \
+RUN mkdir -p \
     $UHOME/bundle \
     $UHOME/.vim/autoload \
     $UHOME/.vim_runtime/temp_dirs \
@@ -72,62 +50,26 @@ RUN apk --no-cache add sudo libc6-compat musl \
     $UHOME/.vim/autoload/pathogen.vim \
     https://tpo.pe/pathogen.vim \
 #custom .vimrc stub
-    && mkdir -p /ext  && echo " " > /ext/.vimrc \
+    && mkdir -p /ext  && echo " " > /ext/.vimrc
 # Vim plugins deps
-    && apk --update add \
-    openssh-client \
-    diffutils \
-    libice \
-    libsm \
-    libx11 \
-    libxt \
-    ncurses \
-    bash \
-    ctags \
-    curl \
-    git \
-    ncurses-terminfo \
-    python \
-    go \
 # YouCompleteMe
-    && apk add --virtual build-deps \
-    build-base \
-    cmake \
-    llvm \
-    perl \
-    python-dev \
-    autoconf automake gcc g++ clang make \
 # Install PHP
-    && apk --no-cache add php7 php-openssl php-json php-phar php-mbstring php-iconv php-session php-pdo php-pcntl php-tokenizer php-curl php-dom php-xml php-xmlwriter \
+RUN apt-get install -y php php-json php-phar php-mbstring php-iconv php-pdo php-tokenizer php-curl php-dom php-xml php-xmlwriter \
     && php -r "copy('https://getcomposer.org/download/1.8.4/composer.phar', 'composer.phar');" \
     && php -r "if (hash_file('sha256', 'composer.phar') === '1722826c8fbeaf2d6cdd31c9c9af38694d6383a0f2bf476fe6bbd30939de058a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer.phar'); } echo PHP_EOL;" \
     && chmod +x composer.phar \
     && mv composer.phar /usr/local/bin/composer \
 # Install Node
-    && apk --no-cache add nodejs npm \
+    && apt-get install -y nodejs npm \
 # Install Node Related
     && npm -g install typescript tslint eslint prettier \
     && npm cache clean --force
 
-    # You complete me
-RUN  git clone --depth 1  https://github.com/Valloric/YouCompleteMe \
-    $UHOME/bundle/YouCompleteMe/ \
-    && cd $UHOME/bundle/YouCompleteMe \
-    && git submodule update --init --recursive \
-    # && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer --ts-completer \
-    && $UHOME/bundle/YouCompleteMe/install.py --gocode-completer \
-    && cd $UHOME/bundle/YouCompleteMe/ \
-    && cd third_party/ycmd/third_party/ && rm -rf gocode && git clone --depth 1 https://github.com/mdempsky/gocode.git && cd gocode && go mod init && go build . \
-    # Install and compile procvim.vim
-    && git clone --depth 1 https://github.com/Shougo/vimproc.vim \
+RUN git clone --depth 1 https://github.com/Shougo/vimproc.vim \
     $UHOME/bundle/vimproc.vim \
     && cd $UHOME/bundle/vimproc.vim \
     && make \
     && chown $UID:$GID -R $UHOME \
-    && apk add \
-    libxt \
-    libx11 \
-    libstdc++ \
     && chown $UNAME:root -R /usr/lib/go/
 
 
@@ -189,6 +131,10 @@ RUN git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x 
     && rm -rf unite.vim && git clone --depth 1 https://github.com/Shougo/unite.vim.git \
     && rm -rf phpactor && git clone --depth 1 https://github.com/phpactor/phpactor.git \
     && rm -rf vim-colors-solarized && git clone --depth 1 https://github.com/altercation/vim-colors-solarized \
+    && rm -rf vim-pythonx && git clone --depth 1 https://github.com/reconquest/vim-pythonx \
+    && rm -rf deoplete.nvim && git clone --depth 1 https://github.com/Shougo/deoplete.nvim \
+    && rm -rf nvim-yarp && git clone --depth 1 https://github.com/roxma/nvim-yarp \
+    && rm -rf vim-hug-neovim-rpc && git clone --depth 1 https://github.com/roxma/vim-hug-neovim-rpc \
 # Further for PHP
     && cd $UHOME/.vim_runtime/sources_non_forked && cd phpactor && composer install \
 # Further for Typescript
@@ -204,11 +150,10 @@ RUN git clone --depth=1 https://github.com/amix/vimrc.git $UHOME/.vim_runtime_x 
     && go build -o $GOBIN/errcheck github.com/kisielk/errcheck \
     && go get -v -u -d github.com/davidrjenni/reftools/cmd/fillstruct \
     && go build -o $GOBIN/fillstruct github.com/davidrjenni/reftools/cmd/fillstruct \
-    && go get -v -u -d github.com/mdempsky/gocode \
-    && go build -o $GOBIN/gocode github.com/mdempsky/gocode \
-    && go get -v -u -d github.com/stamblerre/gocode \
+RUN go get -v -u -d github.com/stamblerre/gocode \
     && go build -o $GOBIN/gocode-gomod github.com/stamblerre/gocode \
-    && go get -v -u -d github.com/rogpeppe/godef \
+    && cp $GOBIN/gocode-gomod $GOBIN/gocode \
+RUN go get -v -u -d github.com/rogpeppe/godef \
     && go build -o $GOBIN/godef github.com/rogpeppe/godef \
     && go get -v -u -d github.com/zmb3/gogetdoc \
     && go build -o $GOBIN/gogetdoc github.com/zmb3/gogetdoc \
@@ -244,11 +189,19 @@ RUN vim -E -c 'execute pathogen#helptags()' -c q ; return 0
 # More plugins
 
 USER root
-RUN cd $UHOME && rm -rf $GOPATH/src/ &&  rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -rf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/ && apk del build-deps
+RUN cd $UHOME && rm -rf $GOPATH/src/ &&  rm -rf ./.vim_runtime_x/ && rm -rf $UHOME/.composer/cache/ && cd $UHOME && find . | grep "\.git/" | xargs rm -rf && rm -rf /var/cache/* && rm -rf /tmp/ && mkdir /tmp/ && rm -rf $UHOME/.vim_runtime_x/
 RUN chmod 1777 /tmp
+RUN apt-get install python3-pip -y
+RUN pip3 install pynvim
+RUN pip3 install neovim
+RUN pip3 install --user pynvim
+RUN pip3 install --user neovim
 USER $UNAME
 COPY .vimrc $UHOME/my.vimrc
 # Build default .vimrc
+
+RUN rm -rf $UHOME/.vim_runtime/sources_non_forked/vim-pythonx
+
 
 RUN mv -f $UHOME/.vimrc $UHOME/.vimrc~ \
     && cat  $UHOME/my.vimrc >> $UHOME/.vimrc~ \
@@ -267,5 +220,7 @@ ENV DISABLE=""
 ENV TERM=xterm-256color
 # Vim wrapper
 COPY run /usr/local/bin/
+
+ENV GOPATH="$UHOME/workspace;$UHOME/workspace/src"
 
 ENTRYPOINT ["sh", "/usr/local/bin/run"]
